@@ -24,6 +24,7 @@ class CitationDataset(Dataset):
         opinions_dir: str,
         tokenizer: DebertaTokenizerFast,
         citation_token_id: int,
+        set_type: str,  # "train", "dev", "test"
         context_size: int = 256,
         forcasting_size: int = 16,
     ) -> None:
@@ -32,13 +33,18 @@ class CitationDataset(Dataset):
         citation token ID, context size, and forcasting size.
         """
         self.opinions_dir = opinions_dir
-        self.file_names = [
-            f for f in os.listdir(opinions_dir) if f.lower().endswith(".json")
-        ]
+        self.file_names = self.get_filenames(set_type)
         self.tokenizer = tokenizer
         self.citation_token_id = citation_token_id
         self.context_size = context_size
         self.forcasting_size = forcasting_size
+
+    def get_filenames(self, set_type: str) -> List[str]:
+        """
+        Returns the filenames of the given type.
+        """
+        with open(f"utils/data_split/{set_type}.txt", "r") as f:
+            return [line.strip() for line in f.readlines() if line.strip() != ""]
 
     def __len__(self) -> int:
         """Returns the total number of opinion files in the dataset."""

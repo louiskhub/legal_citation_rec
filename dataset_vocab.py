@@ -7,7 +7,6 @@ import pickle
 from collections import OrderedDict
 import re
 import random
-import hashlib
 import torch
 import sentencepiece as spm
 from typing import List, Dict, Tuple, Optional, Callable, Union
