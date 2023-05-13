@@ -84,7 +84,9 @@ class CitationDataset(Dataset):
         has a minimum length of context_size + forcasting_size.
         """
         padding_size = max(0, self.context_size + self.forcasting_size - len(encoding))
-        padding = torch.tensor([self.tokenizer.pad_token_id] * padding_size)
+        padding = torch.tensor(
+            [self.tokenizer.pad_token_id] * padding_size, dtype=torch.int
+        )
         return torch.cat([padding, torch.tensor(encoding)])
 
     def get_offset(
@@ -98,7 +100,8 @@ class CitationDataset(Dataset):
         if len(possible_idx) <= 0:
             add_pad: int = self.context_size - all_pos[-1]
             padded = torch.cat(
-                [torch.tensor([self.tokenizer.pad_token_id] * add_pad), padded]
+                [torch.tensor([self.tokenizer.pad_token_id] * add_pad), padded],
+                dtype=torch.int,
             )
             all_pos, possible_idx = self.possible_citation_pos(padded)
         if len(possible_idx) == 0:
