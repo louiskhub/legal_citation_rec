@@ -31,16 +31,22 @@ def init_tokenizer() -> Tuple[DebertaTokenizerFast, int, int]:
 
 
 if __name__ == "__main__":
-    v = load_vocab()
+    # v = load_vocab()
 
     tokenizer, _, cit_id = init_tokenizer()
-    model = init_model(len(tokenizer))
+    # model = init_model(len(tokenizer))
 
     test = CitationDataset(
-        opinions_dir=OPINIONS_FP, tokenizer=tokenizer, citation_token_id=cit_id
+        opinions_dir=OPINIONS_FP,
+        tokenizer=tokenizer,
+        citation_token_id=cit_id,
+        set_type="train",
     )
-    loader = DataLoader(test, batch_size=1)
-    text, cit_idx = next(iter(loader))
+    # loader = DataLoader(test, batch_size=1)
+    # text, cit_idx = next(iter(loader))
 
-    print(tokenizer.decode(text[0].int()))
-    print(v.citation_str_by_index(cit_idx[0]))
+    # print(tokenizer.decode(text[0].int()))
+    # print(v.citation_str_by_index(cit_idx[0]))
+
+    ex = test.__getitem__(0)
+    print(ex)
