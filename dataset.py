@@ -99,7 +99,8 @@ class CitationDataset(Dataset):
                 [torch.tensor([self.tokenizer.pad_token_id] * add_pad), padded]
             )
             all_pos, possible_idx = self.possible_citation_pos(padded)
-
+        if len(possible_idx) == 0:
+            print(self.tokenizer.decode(padded))
         selected_idx: int = np.random.choice(possible_idx)
         possible_offsets = np.arange(
             start=all_pos[selected_idx] - 15,
