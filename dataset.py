@@ -58,9 +58,10 @@ class CitationDataset(Dataset):
         opinion_text, vocab_indices = self.load_data_from_disk(idx)
         encoding = self.tokenizer.encode(opinion_text)
         del opinion_text
-        padded = self.pad(encoding)
-        offset, citation_positions, padded = self.get_offset(padded)
-        context_window = padded[offset - 256 : offset]
+        encoding = self.pad(encoding)
+        offset, citation_positions, encoding = self.get_offset(encoding)
+        context_window = encoding[offset - 256 : offset]
+        del encoding
         citation_vocab_idx = self.get_first_cit_idx(offset, citation_positions)
         label = torch.tensor([vocab_indices[citation_vocab_idx][0]])  # BIAS (see paper)
 
