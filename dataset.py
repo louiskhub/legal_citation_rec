@@ -61,11 +61,9 @@ class CitationDataset(Dataset):
         offset, citation_positions, padded = self.get_offset(padded)
         context_window = padded[offset - 256 : offset]
         citation_vocab_idx = self.get_first_cit_idx(offset, citation_positions)
-        label = torch.tensor(
-            [vocab_indices[citation_vocab_idx][0]], dtype=torch.long
-        )  # BIAS (see paper)
+        label = torch.tensor([vocab_indices[citation_vocab_idx][0]])  # BIAS (see paper)
 
-        return context_window, label
+        return context_window.int(), label
 
     def load_data_from_disk(self, idx: int) -> Tuple[str, List[int]]:
         """
@@ -84,10 +82,8 @@ class CitationDataset(Dataset):
         has a minimum length of context_size + forcasting_size.
         """
         padding_size = max(0, self.context_size + self.forcasting_size - len(encoding))
-        padding = torch.tensor(
-            [self.tokenizer.pad_token_id] * padding_size, dtype=torch.int
-        )
-        return torch.cat([padding, torch.tensor(encoding)], dtype=torch.int)
+        padding = torch.tensor([self.tokenizer.pad_token_id] * padding_size)
+        return torch.cat([padding, torch.tensor(encoding)])
 
     def get_offset(
         self, padded: torch.Tensor
@@ -101,7 +97,6 @@ class CitationDataset(Dataset):
             add_pad: int = self.context_size - all_pos[-1]
             padded = torch.cat(
                 [torch.tensor([self.tokenizer.pad_token_id] * add_pad), padded],
-                dtype=torch.int,
             )
             all_pos, possible_idx = self.possible_citation_pos(padded)
         if len(possible_idx) == 0:
