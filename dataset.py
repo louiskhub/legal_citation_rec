@@ -57,6 +57,7 @@ class CitationDataset(Dataset):
         """
         opinion_text, vocab_indices = self.load_data_from_disk(idx)
         encoding = self.tokenizer.encode(opinion_text)
+        del opinion_text
         padded = self.pad(encoding)
         offset, citation_positions, padded = self.get_offset(padded)
         context_window = padded[offset - 256 : offset]
