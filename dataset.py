@@ -87,7 +87,7 @@ class CitationDataset(Dataset):
         padding = torch.tensor(
             [self.tokenizer.pad_token_id] * padding_size, dtype=torch.int
         )
-        return torch.cat([padding, torch.tensor(encoding)])
+        return torch.cat([padding, torch.tensor(encoding)], dtype=torch.int)
 
     def get_offset(
         self, padded: torch.Tensor
