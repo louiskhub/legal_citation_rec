@@ -61,7 +61,9 @@ class CitationDataset(Dataset):
         offset, citation_positions, padded = self.get_offset(padded)
         context_window = padded[offset - 256 : offset]
         citation_vocab_idx = self.get_first_cit_idx(offset, citation_positions)
-        label = torch.tensor([vocab_indices[citation_vocab_idx][0]])  # BIAS (see paper)
+        label = torch.tensor(
+            [vocab_indices[citation_vocab_idx][0]], dtype=torch.long
+        )  # BIAS (see paper)
 
         return context_window, label
 
