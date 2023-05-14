@@ -5,7 +5,7 @@ import random
 import torch
 
 from dataset_original import CitationDataset
-from train import init_tokenizer
+from experimental.train import init_tokenizer
 from config import CONTEXT_SIZE, FORCASTING_SIZE, OPINIONS_FP
 
 

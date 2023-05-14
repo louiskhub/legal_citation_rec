@@ -1,7 +1,12 @@
 from collections import defaultdict
 import os
+import pickle
+from typing import Tuple
+
 from sklearn.model_selection import KFold, train_test_split
-from config import TRAIN_SPLIT, DEV_SPLIT, TEST_SPLIT, SEED
+from transformers import DebertaForSequenceClassification, DebertaTokenizerFast
+
+from config import DEV_SPLIT, TEST_SPLIT, SEED, VOCAB_FP
 
 
 def evaluation_metrics(result):
@@ -82,3 +87,24 @@ def split_data(opinions_dir: str, cross_validation=True) -> None:
         with open("utils/data_split/test.txt", "w") as f:
             for name in test_names:
                 f.write(name + "\n")
+
+
+def load_vocab():
+    with open(VOCAB_FP, "rb") as f:
+        vocab = pickle.load(f)
+    return vocab
+
+
+def init_model(embedding_len: int) -> DebertaForSequenceClassification:
+    model = DebertaForSequenceClassification.from_pretrained("microsoft/deberta-base")
+    model.resize_token_embeddings(embedding_len)
+    return model
+
+
+def init_tokenizer() -> Tuple[DebertaTokenizerFast, int, int]:
+    tokenizer: DebertaTokenizerFast = DebertaTokenizerFast.from_pretrained(
+        "microsoft/deberta-base"
+    )
+    tokenizer.add_tokens(["@pb@", "@cit@"])  # paragraphs + citations
+    pb_id, cit_id = tokenizer.convert_tokens_to_ids(["@pb@", "@cit@"])
+    return tokenizer, pb_id, cit_id
