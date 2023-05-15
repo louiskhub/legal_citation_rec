@@ -10,11 +10,11 @@ import numpy as np
 import torch
 from transformers import DebertaTokenizerFast
 
-from config import OPINIONS_FP, ICLOUD_PATH
+from config import OPINIONS_FP, ICLOUD_FP
 
 
 logging.basicConfig(
-    filename=os.path.join(ICLOUD_PATH, "data_logs.log"),
+    filename=os.path.join(ICLOUD_FP, "data_logs.log"),
     filemode="a",
     level=logging.INFO,
     format="%(asctime)s  %(message)s",
@@ -66,9 +66,7 @@ class OfflinePreprocessor:
                 )
                 context_windows[i] = torch.cat((encoding[o - 256 : o], label))
 
-            torch.save(
-                context_windows, os.path.join(ICLOUD_PATH, "data", fname + ".pt")
-            )
+            torch.save(context_windows, os.path.join(ICLOUD_FP, "data", fname + ".pt"))
             if fi % 50 == 0:
                 logging.info(f"{fi}/{len(self.file_names)}: {fname}")
             if fi % 100 == 0:

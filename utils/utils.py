@@ -59,7 +59,9 @@ def split_data(opinions_dir: str, cross_validation=True) -> None:
     If cross_validation is True, split the data into 6 folds.
     The file names of the splits will be stored as txt files in the utils folder.
     """
-    file_names = [f for f in os.listdir(opinions_dir) if f.lower().endswith(".json")]
+    file_names = [
+        f.split(".")[0] for f in os.listdir(opinions_dir) if f.lower().endswith(".pt")
+    ]
 
     train_names, test_names = train_test_split(
         file_names,
