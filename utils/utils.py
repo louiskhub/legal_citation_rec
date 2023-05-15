@@ -95,8 +95,10 @@ def load_vocab():
     return vocab
 
 
-def init_model(embedding_len: int) -> DebertaForSequenceClassification:
-    model = DebertaForSequenceClassification.from_pretrained("microsoft/deberta-base")
+def init_model(embedding_len: int, n_classes: int) -> DebertaForSequenceClassification:
+    model = DebertaForSequenceClassification.from_pretrained(
+        "microsoft/deberta-base", num_labels=n_classes
+    )
     model.resize_token_embeddings(embedding_len)
     return model
 
