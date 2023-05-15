@@ -152,7 +152,7 @@ if __name__ == "__main__":
 
     tokenizer, _, cit_id = init_tokenizer()
 
-    for set_type in ("dev", "test"):  # "train",
+    for set_type in ("train", "dev", "test"):
         p = OfflinePreprocessor(
             opinions_dir=OPINIONS_FP,
             tokenizer=tokenizer,

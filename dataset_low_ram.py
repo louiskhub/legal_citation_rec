@@ -44,9 +44,7 @@ class CitationDataset(Dataset):
         citations: torch.Tensor = torch.load(
             os.path.join(self.data_dir, self.file_names[idx])
         )
-        print(citations)
         sample: torch.Tensor = citations[random.randint(0, citations.shape[0] - 1)]
-        print(sample)
         label: torch.Tensor = torch.zeros(self.vocab_size, dtype=torch.int)
         label[sample[-1]] = 1
 
