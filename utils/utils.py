@@ -1,49 +1,47 @@
-from collections import defaultdict
 import os
 import pickle
 from typing import Tuple
 
 from sklearn.model_selection import KFold, train_test_split
-from transformers import DebertaForSequenceClassification, DebertaTokenizerFast
+from transformers import (
+    DebertaForSequenceClassification,
+    DebertaTokenizerFast,
+    EvalPrediction,
+)
 
 from config import DEV_SPLIT, TEST_SPLIT, SEED, VOCAB_FP
 
 
-def evaluation_metrics(result):
-    preds = result.predictions
-    labels = result.label_ids
+def evaluation_metrics(result: EvalPrediction):
     recall_1 = 0
     recall_5 = 0
     recall_3 = 0
     recall_20 = 0
-    count_dict = defaultdict(int)
-    with open("./preds.txt", "w") as f:
-        for i in range(0, len(preds)):
-            raw_pred = list(preds[i])
-            label = labels[i]
-            count_dict[str(label)] += 1
-            idx = sorted(
-                range(len(raw_pred)), key=lambda sub: raw_pred[sub], reverse=True
-            )[:20]
-            f.write(str(label) + " " + ",".join([str(i) for i in idx]) + "\n")
-            if label not in idx:
-                continue
-            elif label not in idx[:5]:
-                recall_20 += 1
-            elif label not in idx[:3]:
-                recall_5 += 1
-            elif label != idx[0]:
-                recall_3 += 1
-            else:
-                recall_1 += 1
 
-    recall_1_ratio = recall_1 / len(preds)
+    print(result.predictions, result.label_ids)
+
+    for pred, label_onehot in zip(result.predictions, result.label_ids):
+        top_20_preds = pred.argsort()[-20:][::-1]
+        label = label_onehot.argmax()
+
+        if label not in top_20_preds:
+            continue
+        elif label not in top_20_preds[:5]:
+            recall_20 += 1
+        elif label not in top_20_preds[:3]:
+            recall_5 += 1
+        elif label != top_20_preds[0]:
+            recall_3 += 1
+        else:
+            recall_1 += 1
+
+    recall_1_ratio = recall_1 / len(result.predictions)
     recall_3 += recall_1
-    recall_3_ratio = recall_3 / len(preds)
+    recall_3_ratio = recall_3 / len(result.predictions)
     recall_5 += recall_3
-    recall_5_ratio = recall_5 / len(preds)
+    recall_5_ratio = recall_5 / len(result.predictions)
     recall_20 += recall_5
-    recall_20_ratio = recall_20 / len(preds)
+    recall_20_ratio = recall_20 / len(result.predictions)
 
     return {
         "recall@1": recall_1_ratio,
