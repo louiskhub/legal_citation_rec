@@ -1,6 +1,3 @@
-from __future__ import annotations
-
-from typing import Tuple, List
 import os
 import random
 
@@ -24,10 +21,10 @@ class CitationDataset(Dataset):
         vocab_size: int,  # "train", "dev", "test"
     ) -> None:
         self.data_dir: str = data_dir
-        self.file_names: List[str] = self.get_filenames(set_type)
+        self.file_names: list[str] = self.get_filenames(set_type)
         self.vocab_size: int = vocab_size
 
-    def get_filenames(self, set_type: str) -> List[str]:
+    def get_filenames(self, set_type: str) -> list[str]:
         """
         Returns the filenames of the given type.
         """
@@ -40,12 +37,12 @@ class CitationDataset(Dataset):
         """Returns the total number of opinion files in the dataset."""
         return len(self.file_names)
 
-    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
-        citations: torch.Tensor = torch.load(
+    def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
+        sample: dict[str, torch.Tensor] = torch.load(
             os.path.join(self.data_dir, self.file_names[idx])
         )
-        sample: torch.Tensor = citations[random.randint(0, citations.shape[0] - 1)]
-        label: torch.Tensor = torch.zeros(self.vocab_size, dtype=torch.int)
-        label[sample[-1]] = 1
+        random_i: int = random.randint(0, sample["inputs"].shape[0] - 1)
+        context: torch.Tensor = sample["inputs"][random_i]
+        label: torch.Tensor = sample["labels"][random_i]
 
-        return sample[:-1], label
+        return context, label

@@ -1,3 +1,17 @@
+# ------------------------------------------------------------------------------------------------
+# Note from Louis: This is the original code from the paper:
+# ------------------------------------------------------------------------------------------------
+# Zihan Huang, Charles Low, Mengqiu Teng, Hongyi Zhang, Daniel E. Ho, Mark Krass and Matthias Grabmair,
+# Context-Aware Legal Citation Recommendation using Deep Learning,
+# Proceedings ICAIL 2021
+# ------------------------------------------------------------------------------------------------
+# The code is available on GitHub at https://github.com/TUMLegalTech/bva-citation-prediction/blob/main/nlp/dataset_vocab.py
+# The code is needed to load the original citation vocabulary (data/vocabs/original.pkl)
+# The original citation vocabulary is available at https://reglab.stanford.edu/data/bva-case-citation-dataset/
+# ------------------------------------------------------------------------------------------------
+
+# type: ignore
+
 from __future__ import annotations
 import json
 from tqdm import tqdm

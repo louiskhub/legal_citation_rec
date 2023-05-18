@@ -1,6 +1,3 @@
-from __future__ import annotations
-
-from typing import Tuple, List, Dict
 import os
 import json
 
@@ -39,7 +36,7 @@ class CitationDataset(Dataset):
         self.context_size = context_size
         self.forcasting_size = forcasting_size
 
-    def get_filenames(self, set_type: str) -> List[str]:
+    def get_filenames(self, set_type: str) -> list[str]:
         """
         Returns the filenames of the given type.
         """
@@ -50,7 +47,7 @@ class CitationDataset(Dataset):
         """Returns the total number of opinion files in the dataset."""
         return len(self.file_names)
 
-    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, int]:
+    def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Returns a random citation context window and the corresponding citation index
         from the opinion file at the given index.
@@ -60,25 +57,27 @@ class CitationDataset(Dataset):
         del opinion_text
         encoding = self.pad(encoding)
         offset, citation_positions, encoding = self.get_offset(encoding)
-        context_window = encoding[offset - 256 : offset]
+        context_window: torch.Tensor = encoding[offset - 256 : offset]
         del encoding
         citation_vocab_idx = self.get_first_cit_idx(offset, citation_positions)
-        label = torch.tensor([vocab_indices[citation_vocab_idx][0]])  # BIAS (see paper)
+        label = torch.tensor(
+            [vocab_indices[citation_vocab_idx][0]]  # type: ignore
+        )  # BIAS (see paper)
 
         return context_window.int(), label
 
-    def load_data_from_disk(self, idx: int) -> Tuple[str, List[int]]:
+    def load_data_from_disk(self, idx: int) -> tuple[str, list[int]]:
         """
         Reads the opinion JSON file at the given index and returns the opinion text
         and the list of citation indices.
         """
         with open(os.path.join(self.opinions_dir, self.file_names[idx]), "r") as f:
-            opinion: Dict = json.load(f)
+            opinion: dict = json.load(f)
 
         # print(self.file_names[idx])  # Just for testing atm
         return opinion["txt"], opinion["citation_indices"]
 
-    def pad(self, encoding: List[int]) -> torch.Tensor:
+    def pad(self, encoding: list[int]) -> torch.Tensor:
         """
         Pads the given encoding with the pad token ID to ensure the resulting tensor
         has a minimum length of context_size + forcasting_size.
@@ -87,9 +86,7 @@ class CitationDataset(Dataset):
         padding = torch.tensor([self.tokenizer.pad_token_id] * padding_size)
         return torch.cat([padding, torch.tensor(encoding)])
 
-    def get_offset(
-        self, padded: torch.Tensor
-    ) -> Tuple[int, np.ndarray[int], torch.Tensor]:
+    def get_offset(self, padded: torch.Tensor) -> tuple[int, np.ndarray, torch.Tensor]:
         """
         Returns the random offset for the context window, the citation positions,
         and the possibly updated padded tensor.
@@ -113,7 +110,7 @@ class CitationDataset(Dataset):
 
     def possible_citation_pos(
         self, padded: torch.Tensor
-    ) -> Tuple[np.ndarray[int], np.ndarray[int]]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """
         Returns the positions of all citation tokens in the padded tensor that meet
         the context and forcasting size constraints, along with the indices of those positions.
@@ -125,9 +122,7 @@ class CitationDataset(Dataset):
 
         return all_citation_pos, possible_indices
 
-    def get_first_cit_idx(
-        self, offset: int, citation_positions: np.ndarray[int]
-    ) -> int:
+    def get_first_cit_idx(self, offset: int, citation_positions: np.ndarray) -> int:
         """
         Returns the index of the first citation token that occurs at or after the given offset.
         """

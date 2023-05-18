@@ -7,7 +7,7 @@ from transformers import Trainer, TrainingArguments
 import torch
 
 from dataset_low_ram import CitationDataset
-from utils.utils import init_tokenizer, init_model, load_vocab, evaluation_metrics
+from utils import init_tokenizer, init_model, load_vocab, evaluation_metrics
 
 logging.basicConfig(level=logging.INFO)
 
@@ -56,8 +56,8 @@ if __name__ == "__main__":
         logging_first_step=False,
         logging_steps=9,
         learning_rate=1e-4,
-        save_total_limit=5,
-        dataloader_num_workers=1,
+        save_total_limit=15,
+        dataloader_num_workers=3,
         gradient_accumulation_steps=3,
         gradient_checkpointing=args["gradient_checkpointing"],
         num_train_epochs=50,

@@ -5,19 +5,19 @@ import random
 import torch
 
 from dataset_original import CitationDataset
-from utils.utils import init_tokenizer
-from config import CONTEXT_SIZE, FORCASTING_SIZE, OPINIONS_FP
+from utils import init_tokenizer
+from config import CONTEXT_SIZE, FORCASTING_SIZE, ORIGINAL_TEXT_FP
 
 
 class TestCitationDataset(unittest.TestCase):
     def setUp(self):
         self.file_names = [
-            f for f in os.listdir(OPINIONS_FP) if f.lower().endswith(".json")
+            f for f in os.listdir(ORIGINAL_TEXT_FP) if f.lower().endswith(".json")
         ]
         self.random_file = random.choice(self.file_names)
         self.tokenizer, _, self.cit_id = init_tokenizer()
         self.dataset = CitationDataset(
-            opinions_dir=OPINIONS_FP,
+            opinions_dir=ORIGINAL_TEXT_FP,
             tokenizer=self.tokenizer,
             citation_token_id=self.cit_id,
         )
