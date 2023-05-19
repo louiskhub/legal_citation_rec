@@ -5,7 +5,7 @@ from typing import TypeAlias, OrderedDict
 # filepaths
 OUTPUTS_FP: str = "outputs"
 LOGS_FP: str = "logs"
-TEXT_FP: str = os.path.join("data", "texts")
+TEXT_FP: str = os.path.join("data", "text")
 VOCAB_FP: str = os.path.join("data", "vocabs")
 SPLIT_FP: str = os.path.join("data", "splits")
 GCLOUD_FP: str = "gs://legal_citation_rec/"

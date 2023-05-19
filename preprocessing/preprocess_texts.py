@@ -43,8 +43,7 @@ class OfflinePreprocessor:
         self.vocab = vocab
         self.context_size = context_size
         self.forcasting_size = forcasting_size
-        self.fp = os.path.join(ICLOUD_FP, "data", "text", f"vocab_size_{len(vocab)}")
-        Path(self.fp).mkdir(parents=True, exist_ok=True)
+        self.fp = os.path.join(TEXT_FP, "preprocessed")
 
     def get_filenames(self) -> list[str]:
         """
@@ -63,26 +62,44 @@ class OfflinePreprocessor:
         are the same as the original JSON files.
         """
 
+        labels: torch.Tensor = torch.empty((0,), dtype=torch.int16)
+        contexts: torch.Tensor = torch.empty((0, 256), dtype=torch.int16)
+        n_saves: int = 0
         for fidx, fname in enumerate(self.file_names[start_at:], start=start_at):
             encoded_text, vocab_indices = self.load_data_from_disk(fname)
             encoded_text = self.pad(encoded_text)
-            context_windows, labels = self.select_data_samples(
+            current_contexts, current_labels = self.select_data_samples(
                 encoded_text, vocab_indices
             )
 
             # only save if we could extract data based on the given vocab
-            if labels:
-                data_sample = {
-                    "inputs": torch.stack(context_windows),
-                    "labels": torch.tensor(labels, dtype=torch.int16),
-                }
-
-                torch.save(
-                    data_sample,
-                    os.path.join(self.fp, fname + ".pt"),
+            if current_labels:
+                labels = torch.cat(
+                    [labels, torch.tensor(current_labels, dtype=torch.int16)]
                 )
+                contexts = torch.vstack([contexts, torch.stack(current_contexts)])
 
             self.log_progress(fidx, fname)
+
+            if labels.shape[0] >= 20000:
+                n_saves += 1
+                # save current progress
+                torch.save(
+                    labels,
+                    os.path.join(
+                        self.fp, f"{n_saves}_labels_size_{len(self.vocab)}.pt"
+                    ),
+                )
+                torch.save(
+                    contexts,
+                    os.path.join(
+                        self.fp, f"{n_saves}_inputs_size_{len(self.vocab)}.pt"
+                    ),
+                )
+
+                # redeclare tensors
+                labels = torch.empty((0,), dtype=torch.int16)
+                contexts = torch.empty((0, 256), dtype=torch.int16)
 
     def load_data_from_disk(self, file_name: str) -> tuple[list[int], list[list[int]]]:
         """
@@ -113,8 +130,10 @@ class OfflinePreprocessor:
                 vidx = self.get_first_cit_idx(o, citation_positions)
                 vkey = str(vocab_indices[vidx][0])
                 if vkey in self.vocab.keys():
-                    labels.append(int(self.vocab[vkey][0]))
-                    context_windows.append(encoded_text[o - 256 : o])
+                    new_label = int(self.vocab[vkey][0])
+                    if new_label not in labels:
+                        labels.append(new_label)
+                        context_windows.append(encoded_text[o - 256 : o])
 
         return context_windows, labels
 
@@ -194,7 +213,9 @@ class OfflinePreprocessor:
         return int(indices[0][0])
 
     def log_progress(self, fidx: int, fname: str) -> None:
-        info: str = f"vocab_size_{len(vocab)}: {fidx}/{len(self.file_names)}: {fname}"
+        info: str = (
+            f"vocab_size_{len(vocab)}: {fidx}/{len(self.file_names)}: {fname} processed"
+        )
         if fidx % 50 == 0:
             logging.info(info)
         if fidx % 500 == 0:
@@ -215,7 +236,7 @@ if __name__ == "__main__":
     args = vars(parser.parse_args())
     # --------------------------------------------------------------------
 
-    for vsize in VOCAB_SIZES:
+    for vsize in VOCAB_SIZES[2:]:
         vocab = load_vocab(vsize)
 
         tokenizer, _, cit_id = init_tokenizer()
