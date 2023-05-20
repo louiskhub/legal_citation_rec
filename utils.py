@@ -21,9 +21,8 @@ def evaluation_metrics(result: EvalPrediction):
     recall_3 = 0
     recall_20 = 0
 
-    for pred, label_onehot in zip(result.predictions, result.label_ids):
+    for pred, label in zip(result.predictions, result.label_ids):
         top_20_preds = pred.argsort()[-20:][::-1]
-        label = label_onehot.argmax()
 
         if label not in top_20_preds:
             continue
