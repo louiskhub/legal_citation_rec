@@ -32,5 +32,6 @@ class CitationDataset(Dataset):
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
         return (  # distilbert needs int32 tensors
             self.inputs[idx].int(),
-            self.onehot[self.labels[idx]],
+            # self.onehot[self.labels[idx]],
+            self.labels[idx].int().reshape(1),
         )
