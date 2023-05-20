@@ -17,8 +17,8 @@ class CitationDataset(Dataset):
     def __init__(
         self,
         data_dir: str,
-        set_type: str,
-        vocab_size: int,  # "train", "dev", "test"
+        set_type: str,  # "train", "dev", "test"
+        vocab_size: int,
     ) -> None:
         self.data_dir: str = data_dir
         self.file_names: list[str] = self.get_filenames(set_type)

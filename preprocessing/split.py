@@ -3,13 +3,13 @@ from pathlib import Path
 import logging
 
 from sklearn.model_selection import KFold, train_test_split
+import torch
 
 from config import (
     DEV_SPLIT,
     SEED,
     TEST_SPLIT,
     VOCAB_SIZES,
-    ICLOUD_FP,
     TEXT_FP,
     SPLIT_FP,
     LOGS_FP,
@@ -24,55 +24,51 @@ logging.basicConfig(
 )
 
 
-def split_data(vsize: int, suffix=".pt", cross_validation=False) -> None:
+def split_data(vsize: int, cross_validation=False) -> None:
     """
     Split the data into train, dev, and test set.
     If cross_validation is True, split the data into 6 folds.
     The file names of the splits will be stored as txt files in the utils folder.
     """
 
-    ddir: str = os.path.join(ICLOUD_FP, TEXT_FP, f"vocab_size_{vsize}")
+    ddir: str = os.path.join(TEXT_FP, "preprocessed")
+    contexts: torch.Tensor = torch.load(os.path.join(ddir, f"size_{vsize}_contexts.pt"))
+    labels: torch.Tensor = torch.load(os.path.join(ddir, f"size_{vsize}_labels.pt"))
 
-    file_names = [
-        f.removesuffix(suffix) for f in os.listdir(ddir) if f.lower().endswith(suffix)
-    ]
-
-    train_names, test_names = train_test_split(
-        file_names,
+    x_train, x_test, y_train, y_test = train_test_split(
+        contexts,
+        labels,
         test_size=TEST_SPLIT,
         random_state=SEED,
         shuffle=True,
     )
+    del contexts
+    del labels
 
     if cross_validation:  # to be done ...
         kf = KFold(n_splits=6, shuffle=True, random_state=SEED)
         print("cross validation is not implemented yet!")
     else:
-        train_names, dev_names = train_test_split(
-            train_names,
+        x_train, x_dev, y_train, y_dev = train_test_split(
+            x_train,
+            y_train,
             test_size=DEV_SPLIT / (1 - TEST_SPLIT),  # recalc the ratio
             random_state=SEED,
             shuffle=True,
         )
 
-        for set_type, set_names in zip(
+        for set_type, ds in zip(
             ["train", "dev", "test"],
-            [train_names, dev_names, test_names],
+            [(x_train, y_train), (x_dev, y_dev), (x_test, y_test)],
         ):
-            save_names(vsize, set_type, set_names)
-
-
-def save_names(vsize: int, set_type: str, set_names: list[str]):
-    fp = os.path.join(SPLIT_FP, f"vocab_size_{vsize}")
-    Path(fp).mkdir(parents=True, exist_ok=True)
-
-    with open(os.path.join(fp, set_type + ".txt"), "w") as f:
-        for name in set_names:
-            f.write(name + "\n")
-
-    logging.info(f"vocab_size_{vsize} {set_type} set is saved.")
+            fp = os.path.join(TEXT_FP, "preprocessed", f"vocab_size_{vsize}", set_type)
+            Path(fp).mkdir(parents=True, exist_ok=True)
+            torch.save(ds[0], os.path.join(fp, "inputs.pt"))
+            torch.save(ds[1], os.path.join(fp, "labels.pt"))
+            logging.info(f"vocab_size_{vsize} {set_type} set is saved.")
 
 
 if __name__ == "__main__":
-    for vsize in VOCAB_SIZES:
+    for vsize in VOCAB_SIZES[3:]:
         split_data(vsize=vsize)
+        break
