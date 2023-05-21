@@ -6,20 +6,23 @@ import torch
 
 from dataset_original import CitationDataset
 from utils import init_tokenizer
-from config import CONTEXT_SIZE, FORCASTING_SIZE, ORIGINAL_TEXT_FP
+from config import CONTEXT_SIZE, FORCASTING_SIZE, TEXT_FP
 
 
 class TestCitationDataset(unittest.TestCase):
     def setUp(self):
         self.file_names = [
-            f for f in os.listdir(ORIGINAL_TEXT_FP) if f.lower().endswith(".json")
+            f
+            for f in os.listdir(os.path.join(TEXT_FP, "original"))
+            if f.lower().endswith(".json")
         ]
         self.random_file = random.choice(self.file_names)
         self.tokenizer, _, self.cit_id = init_tokenizer()
         self.dataset = CitationDataset(
-            opinions_dir=ORIGINAL_TEXT_FP,
+            opinions_dir=os.path.join(TEXT_FP, "original"),
             tokenizer=self.tokenizer,
             citation_token_id=self.cit_id,
+            set_type="train",
         )
 
     def test_load_data_from_disk(self):

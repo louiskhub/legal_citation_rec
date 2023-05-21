@@ -126,6 +126,7 @@ REQUIRED_PACKAGES = [
     "zlib==1.2.13",
     "zstd==1.5.5",
     "sentencepiece==0.1.95",
+    "wandb==0.15.3",
 ]
 
 setup(

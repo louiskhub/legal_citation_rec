@@ -23,7 +23,6 @@ class CitationDataset(Dataset):
         self.fp: str = os.path.join(data_dir, f"vocab_size_{vsize}", set_type)
         self.inputs: torch.IntTensor = torch.load(os.path.join(self.fp, "inputs.pt"))
         self.labels: torch.IntTensor = torch.load(os.path.join(self.fp, "labels.pt"))
-        # self.onehot: torch.Tensor = torch.eye(vsize, dtype=torch.int32)
 
     def __len__(self) -> int:
         """Returns the size of the dataset."""

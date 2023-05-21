@@ -3,6 +3,7 @@ import json
 from collections import OrderedDict
 from typing import Tuple
 
+import torch
 from transformers import (
     DistilBertForSequenceClassification,
     DistilBertTokenizerFast,
@@ -12,6 +13,7 @@ from transformers import (
 from config import (
     VOCAB_FP,
     MODEL_NAME,
+    LR,
 )
 
 
@@ -79,3 +81,31 @@ def init_tokenizer() -> Tuple[DistilBertTokenizerFast, int, int]:
     tokenizer.add_tokens(["@pb@", "@cit@"])  # paragraphs + citations
     pb_id, cit_id = tokenizer.convert_tokens_to_ids(["@pb@", "@cit@"])
     return tokenizer, pb_id, cit_id
+
+
+def init_optimizer(model: DistilBertForSequenceClassification) -> torch.optim.AdamW:
+    """Initializes the optimizer for the DistilBERT model.
+    Weight decay is set to 0.0 to avoid decaying the bias and LayerNorm weights.
+    Used to overwrite the default huggingface scheduler.
+    """
+
+    no_decay = ["bias", "LayerNorm.weight"]
+    optimizer_grouped_parameters = [
+        {
+            "params": [
+                p
+                for n, p in model.named_parameters()
+                if not any(nd in n for nd in no_decay)
+            ],
+            "weight_decay": 0.0,
+        },
+        {
+            "params": [
+                p
+                for n, p in model.named_parameters()
+                if any(nd in n for nd in no_decay)
+            ],
+            "weight_decay": 0.0,
+        },
+    ]
+    return torch.optim.AdamW(optimizer_grouped_parameters, lr=LR)

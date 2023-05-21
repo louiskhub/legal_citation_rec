@@ -8,7 +8,11 @@
             "console": "integratedTerminal",
             "env": {
                 "PYTHONPATH": "${workspaceRoot}"
-            }
+            },
+            "args": [
+                "--data_gcs_path",
+                "data"
+            ]
         }
     ]
 }

@@ -11,7 +11,6 @@ from config import (
     TEST_SPLIT,
     VOCAB_SIZES,
     TEXT_FP,
-    SPLIT_FP,
     LOGS_FP,
 )
 
