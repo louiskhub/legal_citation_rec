@@ -61,7 +61,7 @@ def load_vocab(size: int) -> OrderedDict:
 
 
 def init_model(
-    embedding_len: int, n_classes: int
+    embedding_len: int, n_classes: int, custom_pretrained: str = MODEL_NAME
 ) -> DistilBertForSequenceClassification:
     """Initializes the DistilBERT model.
     The token embeddings are resized to updated (@cit@, @pb@) vocabulary size.)

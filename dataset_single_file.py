@@ -2,7 +2,6 @@ import os
 
 import torch
 from torch.utils.data import Dataset
-from torch.nn.functional import one_hot
 
 ##########################################################
 # Data sampling from a single input file to reduce disk I/O

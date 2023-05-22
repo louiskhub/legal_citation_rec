@@ -23,23 +23,24 @@ logging.basicConfig(
 )
 
 
-def split_data(vsize: int, cross_validation=False) -> None:
+def split_data(vsize: int, cross_validation=False, shuffle=False) -> None:
     """
     Split the data into train, dev, and test set.
     If cross_validation is True, split the data into 6 folds.
     The file names of the splits will be stored as txt files in the utils folder.
     """
 
-    ddir: str = os.path.join(TEXT_FP, "preprocessed")
-    contexts: torch.Tensor = torch.load(os.path.join(ddir, f"size_{vsize}_contexts.pt"))
-    labels: torch.Tensor = torch.load(os.path.join(ddir, f"size_{vsize}_labels.pt"))
+    contexts: torch.Tensor = torch.load(
+        os.path.join(TEXT_FP, f"size_{vsize}_contexts.pt")
+    )
+    labels: torch.Tensor = torch.load(os.path.join(TEXT_FP, f"size_{vsize}_labels.pt"))
 
     x_train, x_test, y_train, y_test = train_test_split(
         contexts,
         labels,
         test_size=TEST_SPLIT,
         random_state=SEED,
-        shuffle=True,
+        shuffle=shuffle,
     )
     del contexts
     del labels
@@ -53,14 +54,14 @@ def split_data(vsize: int, cross_validation=False) -> None:
             y_train,
             test_size=DEV_SPLIT / (1 - TEST_SPLIT),  # recalc the ratio
             random_state=SEED,
-            shuffle=True,
+            shuffle=shuffle,
         )
 
         for set_type, ds in zip(
             ["train", "dev", "test"],
             [(x_train, y_train), (x_dev, y_dev), (x_test, y_test)],
         ):
-            fp = os.path.join(TEXT_FP, "preprocessed", f"vocab_size_{vsize}", set_type)
+            fp = os.path.join(TEXT_FP, "ordered", f"vocab_size_{vsize}", set_type)
             Path(fp).mkdir(parents=True, exist_ok=True)
             torch.save(ds[0], os.path.join(fp, "inputs.pt"))
             torch.save(ds[1], os.path.join(fp, "labels.pt"))
@@ -68,6 +69,5 @@ def split_data(vsize: int, cross_validation=False) -> None:
 
 
 if __name__ == "__main__":
-    for vsize in VOCAB_SIZES[3:]:
+    for vsize in VOCAB_SIZES:
         split_data(vsize=vsize)
-        break
