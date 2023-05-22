@@ -67,7 +67,7 @@ def init_model(
     The token embeddings are resized to updated (@cit@, @pb@) vocabulary size.)
     """
     model = DistilBertForSequenceClassification.from_pretrained(
-        MODEL_NAME, num_labels=n_classes
+        custom_pretrained, num_labels=n_classes
     )
     model.resize_token_embeddings(embedding_len)  # type: ignore
     return model  # type: ignore
