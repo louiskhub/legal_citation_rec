@@ -13,7 +13,7 @@ from transformers import (
 
 from config import (
     VOCAB_FP,
-    MODEL_NAME,
+    BASE_DISTILBERT,
     LR,
     TRAIN_SPLIT,
     TEST_SPLIT,
@@ -67,24 +67,101 @@ def load_vocab(size: int) -> OrderedDict:
     return vocab
 
 
-def init_model(
-    embedding_len: int, n_classes: int, custom_pretrained: str = MODEL_NAME
+def init_model_from_file(
+    embedding_len: int,
+    n_classes: int,
+    model_name: str = "distilbert",
+    n_checkpoint: int = 0,
+    dataset_type: str = "",
+    base_fp: str = "",
 ) -> DistilBertForSequenceClassification:
     """Initializes the DistilBERT model.
     The token embeddings are resized to updated (@cit@, @pb@) vocabulary size.)
     """
+    if n_checkpoint > 0:
+        model = DistilBertForSequenceClassification.from_pretrained(
+            os.path.join(
+                base_fp, model_name, f"vsize_{n_classes}", f"checkpoint-{n_checkpoint}"
+            ),
+            num_labels=n_classes,
+        )
+    else:
+        model = DistilBertForSequenceClassification.from_pretrained(
+            BASE_DISTILBERT, num_labels=n_classes
+        )
+    model.resize_token_embeddings(embedding_len)  # type: ignore
+    return model  # type: ignore
+
+
+def init_model_from_wandb(
+    embedding_len: int,
+    n_classes: int,
+    model_name: str = "distilbert",
+    n_checkpoint: int = 0,
+    dataset_type: str = "",
+) -> DistilBertForSequenceClassification:
+    """Initializes the DistilBERT model.
+    The token embeddings are resized to updated (@cit@, @pb@) vocabulary size.)
+    """
+
+    with wandb.init(
+        project="legal-citation-rec",
+        entity="advanced-nlp",
+        job_type="init-model",
+    ) as run:  # type: ignore
+        model_artifact = run.use_artifact(
+            f"{model_name}-vsize{n_classes}-dataset_type_{dataset_type}-ckpt_{n_checkpoint}:latest"
+        )
+        model_fp = model_artifact.download()
+
     model = DistilBertForSequenceClassification.from_pretrained(
-        custom_pretrained, num_labels=n_classes
+        model_fp,
+        num_labels=n_classes,
     )
     model.resize_token_embeddings(embedding_len)  # type: ignore
     return model  # type: ignore
+
+
+def upload_model_to_wandb(config: dict) -> None:
+    """Uploads the model to weights and biases artifacts."""
+
+    with wandb.init(
+        project="legal-citation-rec",
+        entity="advanced-nlp",
+        job_type="upload-model",
+        config=config,
+    ) as run:  # type: ignore
+        config = wandb.config
+
+        model_artifact = wandb.Artifact(
+            f"{config['model_name']}-vsize{config['n_classes']}-dataset_type_{config['dataset_type']}-ckpt_{config['n_checkpoint']}",
+            type="model",
+            description=f"Standart configuration of {config['model_name']}",
+            metadata=dict(config),
+        )
+
+        if config["n_checkpoint"] > 0:
+            fp: str = os.path.join(
+                config["base_fp"],
+                config["model_name"],
+                f'vsize_{config["n_classes"]}',
+                f'checkpoint-{config["n_checkpoint"]}',
+            )
+        else:
+            fp: str = BASE_DISTILBERT
+
+        model_artifact.new_file(fp)
+
+        wandb.save(fp)
+
+        run.log_artifact(model_artifact)
 
 
 def init_tokenizer() -> Tuple[DistilBertTokenizerFast, int, int]:
     """Initializes the DistilBERT tokenizer.
     Resize the vocabulary to include the new tokens (@cit@, @pb@).
     """
-    tokenizer = DistilBertTokenizerFast.from_pretrained(MODEL_NAME)
+    tokenizer = DistilBertTokenizerFast.from_pretrained(BASE_DISTILBERT)
     tokenizer.add_tokens(["@pb@", "@cit@"])  # paragraphs + citations
     pb_id, cit_id = tokenizer.convert_tokens_to_ids(["@pb@", "@cit@"])
     return tokenizer, pb_id, cit_id

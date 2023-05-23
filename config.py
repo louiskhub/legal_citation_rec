@@ -14,7 +14,7 @@ ICLOUD_FP: str = (
 )
 
 # hyper parameters
-MODEL_NAME: str = "distilbert-base-uncased"
+BASE_DISTILBERT: str = "distilbert-base-uncased"
 CONTEXT_SIZE: int = 256
 FORCASTING_SIZE: int = 16
 LR: float = 1e-4
