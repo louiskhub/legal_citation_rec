@@ -99,6 +99,7 @@ def init_model_from_wandb(
     model_name: str = "distilbert",
     n_checkpoint: int = 0,
     dataset_type: str = "",
+    base_fp: str = "",
 ) -> DistilBertForSequenceClassification:
     """Initializes the DistilBERT model.
     The token embeddings are resized to updated (@cit@, @pb@) vocabulary size.)
@@ -150,9 +151,7 @@ def upload_model_to_wandb(config: dict) -> None:
         else:
             fp: str = BASE_DISTILBERT
 
-        model_artifact.new_file(fp)
-
-        wandb.save(fp)
+        model_artifact.add_dir(fp)
 
         run.log_artifact(model_artifact)
 
