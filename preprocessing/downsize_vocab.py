@@ -1,6 +1,5 @@
 import os
 import pickle
-from typing import TypeAlias
 from collections import OrderedDict
 import json
 import logging
@@ -8,7 +7,7 @@ import logging
 from preprocessing.dataset_vocab import CitationVocabulary
 from config import (
     VOCAB_FP,
-    VOCAB_SIZES,
+    APPROXIMATE_VOCAB_SIZES,
     LOGS_FP,
     SortingStructure,
     NewVocabStructure,
@@ -46,7 +45,7 @@ def sort_by_citation_occurance(v: SortingStructure) -> SortingStructure:
 def downsize(v: SortingStructure) -> dict[int, NewVocabStructure]:
     """Downsize the vocabulary to the given sizes."""
     new_vocabs = dict()
-    for vsize in VOCAB_SIZES:
+    for vsize in APPROXIMATE_VOCAB_SIZES:
         step_size: int = len(original_vocab) // vsize
         downsized: SortingStructure = v[::step_size]
         new_vocab = restructure_vocab(downsized)
@@ -70,7 +69,7 @@ def reinsert_tokens(
 ) -> dict[int, NewVocabStructure]:
     """Reinsert the NOCIT, UNKCIT tokens into the downsized vocabularies."""
     for i, (count, string, old_index) in zip([1, 0], nocit_unkit[::-1]):
-        for vsize in VOCAB_SIZES:
+        for vsize in APPROXIMATE_VOCAB_SIZES:
             vs[vsize][old_index] = (i, string, count)
             vs[vsize].move_to_end(old_index, last=False)
     return vs

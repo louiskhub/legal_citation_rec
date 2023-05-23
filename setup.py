@@ -112,7 +112,7 @@ REQUIRED_PACKAGES = [
     "tornado==6.2",
     "tqdm==4.65.0",
     "traitlets==5.7.1",
-    "transformers==4.24.0",
+    "transformers==4.29.0",
     "typing-extensions==4.5.0",
     "typing_extensions==4.5.0",
     "tzdata==2023c",
@@ -127,6 +127,7 @@ REQUIRED_PACKAGES = [
     "zstd==1.5.5",
     "sentencepiece==0.1.95",
     "wandb==0.15.3",
+    "accelerate==0.19.0",
 ]
 
 setup(

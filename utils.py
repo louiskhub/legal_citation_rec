@@ -4,6 +4,7 @@ from collections import OrderedDict
 from typing import Tuple
 
 import torch
+import wandb
 from transformers import (
     DistilBertForSequenceClassification,
     DistilBertTokenizerFast,
@@ -14,7 +15,13 @@ from config import (
     VOCAB_FP,
     MODEL_NAME,
     LR,
+    TRAIN_SPLIT,
+    TEST_SPLIT,
+    DEV_SPLIT,
+    CONTEXT_SIZE,
+    FORCASTING_SIZE,
 )
+from dataset_single_file import CitationDataset
 
 
 def evaluation_metrics(result: EvalPrediction):
@@ -109,3 +116,83 @@ def init_optimizer(model: DistilBertForSequenceClassification) -> torch.optim.Ad
         },
     ]
     return torch.optim.AdamW(optimizer_grouped_parameters, lr=LR)
+
+
+def upload_datasets_to_wandb(
+    dataset_type: str, vsize: int, model_name: str = "DistilBERT"
+) -> None:
+    """Uploads the datasets to weights and biases artifacts."""
+
+    fp_ds = f"data/text/{dataset_type}"
+
+    wandb.login()
+    os.environ["WANDB_LOG_MODEL"] = "true"
+
+    datasets = {
+        set_type: CitationDataset(
+            data_dir=fp_ds,
+            set_type=set_type,
+            vsize=vsize,
+        )
+        for set_type in (
+            "train",
+            "dev",
+            "test",
+        )
+    }
+
+    with wandb.init(
+        project="legal-citation-rec",
+        entity="advanced-nlp",
+        job_type="upload-dataset",
+    ) as run:  # type: ignore
+        processed_data = wandb.Artifact(
+            f"bva-vsize{vsize}-{dataset_type}-singlefile",
+            type="dataset",
+            description=f"Preprocessed BCA corpus with vocab size {vsize} in a single file.",
+            metadata={
+                "vsize": vsize,
+                "dataset_type": dataset_type,
+                "n_samples": [len(ds) for ds in datasets.values()],
+                "tokenizer": model_name,
+                "train_split": TRAIN_SPLIT,
+                "dev_split": DEV_SPLIT,
+                "test_split": TEST_SPLIT,
+                "context_size": CONTEXT_SIZE,
+                "forcasting_size": FORCASTING_SIZE,
+            },
+        )
+
+        for name, ds in datasets.items():
+            with processed_data.new_file(name + ".pt", mode="wb") as f:
+                torch.save(ds, f)
+
+        run.log_artifact(processed_data)
+
+
+def get_datasets_from_wandb(
+    dataset_type: str,
+    vsize: int,
+    version: str = "latest",
+) -> dict[str, CitationDataset]:
+    """Downloads the datasets from weights and biases artifacts."""
+
+    wandb.login()
+    os.environ["WANDB_LOG_MODEL"] = "true"
+
+    with wandb.init(
+        project="legal-citation-rec",
+        entity="advanced-nlp",
+        job_type="get-dataset",
+    ) as run:  # type: ignore
+        stored_artifact = wandb.use_artifact(
+            f"bva-vsize{vsize}-{dataset_type}-singlefile:{version}"
+        )
+        downloaded_artifact = stored_artifact.download()
+
+        datasets = {
+            set_type: torch.load(os.path.join(downloaded_artifact, set_type + ".pt"))
+            for set_type in ("train", "dev", "test")
+        }
+
+    return datasets

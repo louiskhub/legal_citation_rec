@@ -23,7 +23,7 @@ LR: float = 1e-4
 TRAIN_SPLIT: float = 0.72
 DEV_SPLIT: float = 0.18
 TEST_SPLIT: float = 0.1
-VOCAB_SIZES: tuple[int, int, int, int] = (
+APPROXIMATE_VOCAB_SIZES: tuple[int, int, int, int] = (
     1429,
     857,
     476,

@@ -48,15 +48,15 @@ def unite_texts(text_dir: str, vsize: int) -> None:
         # os.remove(os.path.join(text_dir, input_f))
         # logging.info(f"Deleted {input_f} and {label_f}.")
 
-    torch.save(labels, os.path.join(TEXT_FP, "preprocessed", f"size_{vsize}_labels.pt"))
+    torch.save(labels, os.path.join(TEXT_FP, "preprocessedv2", f"size_{vsize}_labels.pt"))
     torch.save(
-        contexts, os.path.join(TEXT_FP, "preprocessed", f"size_{vsize}_contexts.pt")
+        contexts, os.path.join(TEXT_FP, "preprocessedv2", f"size_{vsize}_contexts.pt")
     )
 
     logging.info(f"Finished uniting texts for vocab size {vsize}.")
 
 
 if __name__ == "__main__":
-    for vsize in VOCAB_SIZES[2:]:
-        dir_fp: str = os.path.join(TEXT_FP, "preprocessed")
-        unite_texts(dir_fp, vsize)
+    #for vsize in VOCAB_SIZES:
+    dir_fp: str = os.path.join(TEXT_FP, "preprocessed")
+    unite_texts(dir_fp, 4287)

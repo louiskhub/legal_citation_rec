@@ -12,7 +12,6 @@ from transformers import DistilBertTokenizerFast
 from config import (
     LOGS_FP,
     TEXT_FP,
-    ICLOUD_FP,
     CONTEXT_SIZE,
     FORCASTING_SIZE,
     VOCAB_SIZES,
@@ -236,15 +235,16 @@ if __name__ == "__main__":
     args = vars(parser.parse_args())
     # --------------------------------------------------------------------
 
-    for vsize in VOCAB_SIZES[2:]:
-        vocab = load_vocab(vsize)
+    # for vsize in VOCAB_SIZES:
+    vsize = 4287
+    vocab = load_vocab(vsize)
 
-        tokenizer, _, cit_id = init_tokenizer()
+    tokenizer, _, cit_id = init_tokenizer()
 
-        p = OfflinePreprocessor(
-            tokenizer=tokenizer,
-            citation_token_id=cit_id,
-            vocab=vocab,
-        )
+    p = OfflinePreprocessor(
+        tokenizer=tokenizer,
+        citation_token_id=cit_id,
+        vocab=vocab,
+    )
 
-        p.run(args["start_at"])
+    p.run(args["start_at"])

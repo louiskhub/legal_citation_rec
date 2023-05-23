@@ -29,11 +29,11 @@ def split_data(vsize: int, cross_validation=False, shuffle=False) -> None:
     If cross_validation is True, split the data into 6 folds.
     The file names of the splits will be stored as txt files in the utils folder.
     """
-
+    
     contexts: torch.Tensor = torch.load(
-        os.path.join(TEXT_FP, f"size_{vsize}_contexts.pt")
+        os.path.join(TEXT_FP, "preprocessed", f"size_{vsize}_contexts.pt")
     )
-    labels: torch.Tensor = torch.load(os.path.join(TEXT_FP, f"size_{vsize}_labels.pt"))
+    labels: torch.Tensor = torch.load(os.path.join(TEXT_FP, "preprocessed", f"size_{vsize}_labels.pt"))
 
     x_train, x_test, y_train, y_test = train_test_split(
         contexts,
@@ -69,5 +69,5 @@ def split_data(vsize: int, cross_validation=False, shuffle=False) -> None:
 
 
 if __name__ == "__main__":
-    for vsize in VOCAB_SIZES:
-        split_data(vsize=vsize)
+    #for vsize in VOCAB_SIZES:
+    split_data(vsize=4287)
