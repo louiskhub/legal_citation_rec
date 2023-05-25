@@ -1,15 +1,26 @@
-from __future__ import annotations
 import os
 import logging
 import argparse
 
 from transformers import Trainer, TrainingArguments
 import torch
+from torch.utils.data import Subset
+import wandb
 
-from dataset_single_file import CitationDataset
-from utils import init_tokenizer, init_model, evaluation_metrics, init_optimizer
+from utils import (
+    init_tokenizer,
+    evaluation_metrics,
+    init_optimizer,
+    get_datasets_from_wandb,
+    init_model_from_wandb,
+)
+from keys import WANDB_API_KEY
+
 
 logging.basicConfig(level=logging.INFO)
+
+os.environ["WANDB_API_KEY"] = WANDB_API_KEY
+os.environ["WANDB_LOG_MODEL"] = "checkpoint"
 
 
 def custom_data_collator(features):
@@ -22,53 +33,60 @@ def custom_data_collator(features):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Trainer Task")
-    parser.add_argument("-d", "--data_gcs_path", type=str)
-    parser.add_argument("-s", "--vocab_size", type=int, default=105)
-    parser.add_argument("-g", "--gradient_checkpointing", type=bool, default=False)
+    parser.add_argument("-g", "--data_gcs_path", type=str)
+    parser.add_argument("-c", "--checkpoint", type=int)
+    parser.add_argument("-s", "--vocab_size", type=int, default=4287)
+    parser.add_argument("-d", "--dataset_type", type=str, default="ordered")
     args = vars(parser.parse_args())
     vsize: int = args["vocab_size"]
+    dataset_type: str = args["dataset_type"]
+
+    datasets = get_datasets_from_wandb(dataset_type, vsize)
+    wandb.login()
 
     tokenizer, _, cit_id = init_tokenizer()
-    model = init_model(len(tokenizer), n_classes=vsize)
+
+    config = {
+        "embedding_len": len(tokenizer),
+        "n_classes": vsize,
+        "model_name": "distilbert",
+        "n_checkpoint": args["checkpoint"],
+        "dataset_type": dataset_type,
+        "base_fp": "",
+    }
+
+    model = init_model_from_wandb(**config)
     optimizer = init_optimizer(model)
 
-    train_ds = CitationDataset(
-        data_dir=os.path.join(args["data_gcs_path"], "text"),  # gs://legal_citation_rec
-        set_type="train",
-        vsize=vsize,
-    )
-    dev_ds = CitationDataset(
-        data_dir=os.path.join(args["data_gcs_path"], "text"),  # gs://legal_citation_rec
-        set_type="dev",
-        vsize=vsize,
-    )
-
     training_args = TrainingArguments(
-        output_dir=os.path.join(args["data_gcs_path"], "outputs"),
-        evaluation_strategy="steps",
-        eval_steps=2,
+        run_name=f"training-vsize{vsize}-{dataset_type}-singlefile",
+        report_to="wandb",  # type: ignore
+        output_dir=args["data_gcs_path"],
+        evaluation_strategy="epoch",
         do_train=True,
         do_eval=True,
         fp16=False,
-        save_strategy="steps",
-        save_steps=250,
-        per_device_train_batch_size=4,  # 128
-        per_device_eval_batch_size=4,  # 128
+        save_strategy="epoch",
+        per_device_train_batch_size=64,  # 128
+        per_device_eval_batch_size=64,  # 128
         logging_first_step=False,
         logging_steps=9,
         learning_rate=1e-4,
-        save_total_limit=5,
+        save_total_limit=8,
         dataloader_num_workers=1,
-        # gradient_accumulation_steps=9, # 3
-        # gradient_checkpointing=True,
-        num_train_epochs=20,
+        gradient_accumulation_steps=9,  # 3
+        eval_accumulation_steps=3000,
+        num_train_epochs=5,
     )
+
+    smaller_dev_set = Subset(datasets["dev"], range(len(datasets["dev"]) // 4))
+    del datasets["dev"]
 
     trainer = Trainer(
         model=model,
         args=training_args,
-        train_dataset=train_ds,
-        eval_dataset=dev_ds,
+        train_dataset=datasets["train"],
+        eval_dataset=smaller_dev_set,
         compute_metrics=evaluation_metrics,
         optimizers=(
             optimizer,
