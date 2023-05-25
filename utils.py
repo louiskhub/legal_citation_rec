@@ -201,9 +201,6 @@ def upload_datasets_to_wandb(
 
     fp_ds = f"data/text/{dataset_type}"
 
-    wandb.login()
-    os.environ["WANDB_LOG_MODEL"] = "true"
-
     datasets = {
         set_type: CitationDataset(
             data_dir=fp_ds,
@@ -252,9 +249,6 @@ def get_datasets_from_wandb(
     version: str = "latest",
 ) -> dict[str, CitationDataset]:
     """Downloads the datasets from weights and biases artifacts."""
-
-    wandb.login()
-    os.environ["WANDB_LOG_MODEL"] = "true"
 
     with wandb.init(
         project="legal-citation-rec",

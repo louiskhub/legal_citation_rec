@@ -19,7 +19,6 @@ from keys import WANDB_API_KEY
 
 logging.basicConfig(level=logging.INFO)
 
-os.environ["WANDB_API_KEY"] = WANDB_API_KEY
 os.environ["WANDB_LOG_MODEL"] = "checkpoint"
 
 
@@ -41,8 +40,8 @@ if __name__ == "__main__":
     vsize: int = args["vocab_size"]
     dataset_type: str = args["dataset_type"]
 
+    wandb.login(key=WANDB_API_KEY)
     datasets = get_datasets_from_wandb(dataset_type, vsize)
-    wandb.login()
 
     tokenizer, _, cit_id = init_tokenizer()
 
@@ -76,7 +75,7 @@ if __name__ == "__main__":
         dataloader_num_workers=1,
         gradient_accumulation_steps=9,  # 3
         eval_accumulation_steps=3000,
-        num_train_epochs=5,
+        num_train_epochs=3,
     )
 
     smaller_dev_set = Subset(datasets["dev"], range(len(datasets["dev"]) // 4))
