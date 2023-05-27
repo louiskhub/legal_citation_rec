@@ -15,9 +15,11 @@ ICLOUD_FP: str = (
 
 # hyper parameters
 BASE_DISTILBERT: str = "distilbert-base-uncased"
-CONTEXT_SIZE: int = 256
-FORCASTING_SIZE: int = 16
-LR: float = 1e-4
+CONTEXT_SIZE: int = 256  # input sequence length
+FORCASTING_SIZE: int = (
+    16  # maximum distance between citation token and last context token
+)
+LR: float = 1e-4  # learning rate
 
 # data splits
 TRAIN_SPLIT: float = 0.72
@@ -29,7 +31,7 @@ APPROXIMATE_VOCAB_SIZES: tuple[int, int, int, int] = (
     476,
     102,
 )  # actual ones differs slightly from actual sizes (by 2-3)
-VOCAB_SIZES: tuple[int, int, int, int] = (
+DOWNSIZED_VOCAB_SIZES: tuple[int, int, int, int] = (
     1431,
     859,
     479,

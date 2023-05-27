@@ -7,7 +7,10 @@ from torch.utils.data import Dataset
 from transformers import DebertaTokenizerFast
 
 #############################################
-# Data sampling like in the original paper
+# Data sampling like in:
+# Zihan Huang, Charles Low, Mengqiu Teng, Hongyi Zhang, Daniel E. Ho, Mark Krass and Matthias Grabmair,
+# Context-Aware Legal Citation Recommendation using Deep Learning,
+# Proceedings ICAIL 2021
 #############################################
 
 

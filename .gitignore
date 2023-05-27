@@ -1,5 +1,10 @@
 experimental/
-data/
+data/text/original/*
+data/text/preprocessed/*
+data/text/original/*
+data/text/ordered/*
+data/text/shuffled/*
+data/vocabs/*
 wandb/
 artifacts/
 keys.py

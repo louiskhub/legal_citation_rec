@@ -33,7 +33,9 @@ def restructure_for_sorting(v: CitationVocabulary) -> SortingStructure:
 def seperate_tokens(
     v: SortingStructure,
 ) -> tuple[SortingStructure, SortingStructure]:
-    """NOCIT, UNKCIT tokens are seperated from the rest of the vocabulary before sorting."""
+    """NOCIT, UNKCIT tokens are seperated from the rest of the vocabulary before sorting.
+    They will always stay in the first two positions of the vocabulary.
+    """
     return v[:2], v[2:]
 
 

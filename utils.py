@@ -61,7 +61,7 @@ def evaluation_metrics(result: EvalPrediction):
 
 
 def load_vocab(size: int) -> OrderedDict:
-    """Load the (new) vocabulary of the given size."""
+    """Load the (new, restructured) vocabulary of the given size."""
     with open(os.path.join(VOCAB_FP, f"size_{size}.json"), "r") as f:
         vocab = json.load(f, object_pairs_hook=OrderedDict)
     return vocab

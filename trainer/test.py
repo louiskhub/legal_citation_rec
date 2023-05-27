@@ -19,8 +19,6 @@ from keys import WANDB_API_KEY
 
 logging.basicConfig(level=logging.INFO)
 
-os.environ["WANDB_LOG_MODEL"] = "checkpoint"
-
 
 def custom_data_collator(features):
     batch = {}
@@ -78,14 +76,11 @@ if __name__ == "__main__":
         num_train_epochs=3,
     )
 
-    smaller_dev_set = Subset(datasets["dev"], range(len(datasets["dev"]) // 4))
-    del datasets["dev"]
-
     trainer = Trainer(
         model=model,
         args=training_args,
         train_dataset=datasets["train"],
-        eval_dataset=smaller_dev_set,
+        eval_dataset=datasets["test"],
         compute_metrics=evaluation_metrics,
         optimizers=(
             optimizer,
@@ -94,5 +89,4 @@ if __name__ == "__main__":
         data_collator=custom_data_collator,
     )
 
-    trainer.train()
-    trainer.save_model()
+    trainer.evaluate()

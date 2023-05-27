@@ -5,6 +5,7 @@ from torch.utils.data import Dataset
 
 ##########################################################
 # Data sampling from a single input file to reduce disk I/O
+# Data is already tokenized and structured into inputs/labels
 ##########################################################
 
 
