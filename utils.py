@@ -172,6 +172,7 @@ def init_optimizer(model: DistilBertForSequenceClassification) -> torch.optim.Ad
     Used to overwrite the default huggingface scheduler.
     """
 
+    # Exact same optimization as in the baseline paper ----------------------------
     no_decay = ["bias", "LayerNorm.weight"]
     optimizer_grouped_parameters = [
         {
@@ -191,6 +192,7 @@ def init_optimizer(model: DistilBertForSequenceClassification) -> torch.optim.Ad
             "weight_decay": 0.0,
         },
     ]
+    # -----------------------------------------------------------------------------
     return torch.optim.AdamW(optimizer_grouped_parameters, lr=LR)
 
 

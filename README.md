@@ -1,15 +1,6 @@
-# BIAS in sampling
-because 1st citation is always chosen
+# Improving Legal Citation Recommendation with DistilBERT: A Study on Performance and Efficiency
+Code for the paper "Improving Legal Citation Recommendation with DistilBERT: A Study on Performance and Efficiency" by Louis Kapp.
 
-
-
-# Epochs
-single epoch but huge training time
-5hrs for single epoch
-
-
-# Efficient, context-aware legal citation recommendation
-Code for the paper "Efficient, context-aware legal citation recommendation" by Louis Kapp.
 ## Setup
 1. Download the preprocessed citation dataset from [Stanford's RegLab announcement blog](https://reglab.stanford.edu/data/bva-case-citation-dataset/) and unzip it into `data/text/original`.
 2. Download the original citation vocabulary from [Stanford's RegLab announcement blog](https://reglab.stanford.edu/data/bva-case-citation-dataset/) and save it as `data/vocabs/original.pkl`.
@@ -27,6 +18,12 @@ All preprocessing scripts can be found in the [preprocessing](preprocessing) fol
 5. Run [split](preprocessing/split.py) to create a train, development and test set. It is recommended to use shuffled=False, since shuffling could artifically boost the models performance. Without shuffling, we can ensure that the all data splits will consist of samples from different opinion texts. With shuffling, even though the samples are different, they might still be from the same opinion text which could lead to a biased evaluation.
 
 ## Datasets
+
+### Preprocessed Datasets
+
+If you want to skip the outlined preprocessing steps, all preprocessed dataset versions that I have experimented with, are publicly accessible [here](https://wandb.ai/advanced-nlp/legal-citation-rec/artifacts/dataset).
+
+### Data Loaders
 
 There are 3 different dataset classes that we experimented with:
 1. The version in [dataset_low_ram](dataset_low_ram.py) loads each sample from a single binary .pt file. It is not used in the final version.
@@ -56,3 +53,12 @@ If you want to use weights and biases for logging training, evaluation or testin
 
 ### My weights and biases logs
 You can find my logs of evaluation metrics publicly in [this wandb project](https://wandb.ai/advanced-nlp/legal-citation-rec?workspace=user-).
+
+The metrics for DistilBERT-base that were reported in the paper can be found in the following runs:
+
+1. [vsize=4287, split=ordered](https://wandb.ai/advanced-nlp/legal-citation-rec/runs/o59o6482?workspace=user-louiskhub) <br>
+The results were obtained after a single training epoch. The model checkpoint is stored [here](https://wandb.ai/advanced-nlp/legal-citation-rec/artifacts/model/distilbert-vsize4287-dataset_type_ordered-ckpt_1/v0/overview).
+2. [vsize=859, split=shuffled](https://wandb.ai/advanced-nlp/legal-citation-rec/runs/r5riwu1z?workspace=user-louiskhub)<br>
+The results were obtained after training for 1750 steps steps which corresponds to approximately 1.7 epochs (since there are 576,060 training samples with batch size of 576). The model checkpoint is stored [here](https://wandb.ai/advanced-nlp/legal-citation-rec/artifacts/model/distilbert-vsize859-dataset_type_shuffled-ckpt_1750/v0).
+3. [vsize=105, split=ordered](https://wandb.ai/advanced-nlp/legal-citation-rec/runs/anaehx6h?workspace=user-louiskhub)<br>
+The results were obtained after training for 2750 steps steps which corresponds to approximately 13.7 epochs (since there are 115,200 training samples with batch size of 576). The model checkpoint is stored [here](https://wandb.ai/advanced-nlp/legal-citation-rec/artifacts/model/distilbert-vsize105-dataset_type_ordered-ckpt_2750/v0).

@@ -9,9 +9,6 @@ TEXT_FP: str = os.path.join("data", "text")
 VOCAB_FP: str = os.path.join("data", "vocabs")
 SPLIT_FP: str = os.path.join("data", "splits")
 GCLOUD_FP: str = "gs://legal_citation_rec/"
-ICLOUD_FP: str = (
-    "../../Library/Mobile Documents/com~apple~CloudDocs/nlp"  # local testing
-)
 
 # hyper parameters
 BASE_DISTILBERT: str = "distilbert-base-uncased"
